@@ -1,0 +1,27 @@
+{
+  "name": "@ihaleci/agents",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "node-telegram-bot-api": "^0.67.0",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.59.1",
+    "puppeteer": "^24.43.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/node-telegram-bot-api": "^0.64.14",
+    "@types/pdf-parse": "^1.1.5"
+  }
+}

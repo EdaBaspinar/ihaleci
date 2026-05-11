@@ -1,0 +1,13 @@
+{
+  "name": "@tender-iq/core",
+  "version": "1.0.0",
+  "description": "TenderIQ Core Database and Logic Package",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

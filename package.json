@@ -3,13 +3,21 @@
     "version": "0.1.0",
     "private": true,
     "workspaces": [
-      "apps/*",
-      "packages/*"
+        "apps/*",
+        "packages/*"
     ],
     "scripts": {
-      "dev": "npm run dev --workspace=apps/web",
-      "worker": "npm run start --workspace=packages/workers",
-      "db:up": "docker compose up -d",
-      "db:down": "docker compose down"
+        "dev": "npm run dev --workspace=apps/web",
+        "worker": "npm run start --workspace=packages/workers",
+        "db:up": "docker compose up -d",
+        "db:down": "docker compose down"
+    },
+    "devDependencies": {
+        "@types/node": "^25.6.0",
+        "postgres": "^3.4.9",
+        "tsx": "^4.21.0"
+    },
+    "dependencies": {
+        "dotenv": "^17.4.2"
     }
-  }
+}
