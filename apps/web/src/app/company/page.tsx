@@ -1,14 +1,67 @@
 'use client'
 import { useState } from 'react'
-import { Building2, MapPin, Briefcase, Tags, Save, CheckCircle2 } from 'lucide-react'
+import { Building2, MapPin, Briefcase, Tags, Save, CheckCircle2, Loader2 } from 'lucide-react'
 
 export default function CompanyProfilePage() {
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false) // Yüklenme animasyonu için state
+  
+  // Form verilerini tutan state'ler
+  const [companyName, setCompanyName] = useState("TechNova Bilişim A.Ş.")
+  const [location, setLocation] = useState("İstanbul, Türkiye")
+  const [sector, setSector] = useState("Yazılım & Bilişim")
   const [skills, setSkills] = useState(['Veri Analizi', 'Yapay Zeka', 'Web Geliştirme', 'Makine Öğrenmesi', 'Bulut Bilişim'])
+  const [newSkill, setNewSkill] = useState("")
 
-  const handleSave = () => {
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3000)
+  // Yetkinlik Ekleme Fonksiyonu
+  const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && newSkill.trim() !== '') {
+      if (!skills.includes(newSkill.trim())) {
+        setSkills([...skills, newSkill.trim()])
+      }
+      setNewSkill("")
+    }
+  }
+
+  // Yetkinlik Silme Fonksiyonu
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setSkills(skills.filter(skill => skill !== skillToRemove))
+  }
+
+  // Gerçek Veritabanı Kayıt Fonksiyonu
+  const handleSave = async () => {
+    setIsLoading(true);
+    
+    // Backend'e gönderilecek paket
+    const profileData = {
+      name: companyName,
+      location: location,
+      sector: sector,
+      skills: skills
+    };
+
+    try {
+      // Yazdığımız API'ye POST isteği atıyoruz
+      const response = await fetch('/api/company', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (response.ok) {
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 3000);
+      } else {
+        alert("Kayıt sırasında bir hata oluştu!");
+      }
+    } catch (error) {
+      console.error("Kayıt Hatası:", error);
+      alert("Sunucuya bağlanılamadı!");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -35,7 +88,8 @@ export default function CompanyProfilePage() {
                 <label className="block text-sm font-medium text-slate-400 mb-2">Firma Adı</label>
                 <input 
                   type="text" 
-                  defaultValue="TechNova Bilişim A.Ş."
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 />
               </div>
@@ -47,7 +101,8 @@ export default function CompanyProfilePage() {
                   </label>
                   <input 
                     type="text" 
-                    defaultValue="İstanbul, Türkiye"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -55,7 +110,11 @@ export default function CompanyProfilePage() {
                   <label className="flex items-center text-sm font-medium text-slate-400 mb-2">
                     <Briefcase size={16} className="mr-1" /> Sektör
                   </label>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none">
+                  <select 
+                    value={sector}
+                    onChange={(e) => setSector(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all appearance-none"
+                  >
                     <option>Yazılım & Bilişim</option>
                     <option>Savunma Sanayi</option>
                     <option>İnşaat & Mimarlık</option>
@@ -66,19 +125,22 @@ export default function CompanyProfilePage() {
 
               <div>
                 <label className="flex items-center text-sm font-medium text-slate-400 mb-2">
-                  <Tags size={16} className="mr-1" /> Teknik Yetkinlikler (Yapay Zeka bu kelimeleri arar)
+                  <Tags size={16} className="mr-1" /> Teknik Yetkinlikler (Enter'a basarak ekleyin)
                 </label>
                 <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl">
                   <div className="flex flex-wrap gap-2 mb-4">
                     {skills.map((skill, index) => (
                       <span key={index} className="px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-sm flex items-center">
                         {skill}
-                        <button className="ml-2 hover:text-white transition-colors">×</button>
+                        <button onClick={() => handleRemoveSkill(skill)} className="ml-2 hover:text-white transition-colors">×</button>
                       </span>
                     ))}
                   </div>
                   <input 
                     type="text" 
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={handleAddSkill}
                     placeholder="Yeni yetkinlik ekle ve Enter'a bas..."
                     className="w-full bg-transparent text-sm text-white focus:outline-none placeholder:text-slate-600"
                   />
@@ -89,14 +151,17 @@ export default function CompanyProfilePage() {
             <div className="pt-6 border-t border-slate-800 flex justify-end">
               <button 
                 onClick={handleSave}
+                disabled={isLoading}
                 className={`flex items-center space-x-2 px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
                   isSaved 
                     ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
-                    : 'bg-linear-to-r from-blue-600 to-cyan-500 text-white hover:shadow-blue-500/20 active:scale-95'
+                    : isLoading
+                      ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                      : 'bg-linear-to-r from-blue-600 to-cyan-500 text-white hover:shadow-blue-500/20 active:scale-95'
                 }`}
               >
-                {isSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
-                <span>{isSaved ? 'Kaydedildi' : 'Profili Kaydet'}</span>
+                {isLoading ? <Loader2 size={18} className="animate-spin" /> : isSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                <span>{isLoading ? 'Kaydediliyor...' : isSaved ? 'Kaydedildi' : 'Profili Kaydet'}</span>
               </button>
             </div>
           </div>
@@ -111,12 +176,12 @@ export default function CompanyProfilePage() {
               TenderIQ Analiz Motoru
             </h4>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Bu ekranda girdiğiniz yetkinlikler, <span className="text-blue-400 font-medium">Gemini 2.0</span> modeli tarafından şartnamelerle karşılaştırılarak "Match Score" hesaplamasında kullanılır.
+              Bu ekranda girdiğiniz yetkinlikler, <span className="text-blue-400 font-medium">Yapay Zeka</span> modeli tarafından şartnamelerle karşılaştırılarak "Match Score" hesaplamasında kullanılır.
             </p>
             <div className="mt-6 p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
               <p className="text-xs text-slate-500 font-mono">
                 SİSTEM DURUMU:
-                <br/><span className="text-emerald-400 mt-1 block">✔ Profil Verileri Senkronize</span>
+                <br/><span className="text-emerald-400 mt-1 block">✔ Veritabanı Bağlantısı Aktif</span>
               </p>
             </div>
           </div>
