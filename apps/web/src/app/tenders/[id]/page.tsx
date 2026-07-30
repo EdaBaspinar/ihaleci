@@ -2,6 +2,8 @@
 import { useState, use } from 'react'
 import { Send, Bot, User, ChevronLeft, Paperclip, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function TenderChat({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = use(paramsPromise);
@@ -10,11 +12,11 @@ export default function TenderChat({ params: paramsPromise }: { params: Promise<
   const [messages, setMessages] = useState([
     { 
       role: 'assistant', 
-      content: `Merhaba! TenderIQ Asistanı hazır. ${tenderId} numaralı ihaleye ait şartnameyi analiz ettim. Teknik detaylar veya riskler hakkında bana her şeyi sorabilirsin.` 
+      content: `Merhaba! TenderIQ Asistanı hazır. **${tenderId}** numaralı ihaleye ait şartnameyi analiz ettim. Teknik detaylar veya riskler hakkında bana her şeyi sorabilirsin.` 
     }
   ])
   const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false) // Bekleme durumu eklendi
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return
@@ -23,7 +25,7 @@ export default function TenderChat({ params: paramsPromise }: { params: Promise<
     setMessages(prev => [...prev, userMessage])
     const currentInput = input;
     setInput('')
-    setIsLoading(true) // Yapay zeka düşünmeye başladı
+    setIsLoading(true)
     
     try {
       const response = await fetch('/api/chat', {
@@ -44,13 +46,13 @@ export default function TenderChat({ params: paramsPromise }: { params: Promise<
         content: "Üzgünüm, şu an bağlantı kuramıyorum. Lütfen API anahtarını ve internetini kontrol et!" 
       }])
     } finally {
-      setIsLoading(false) // İşlem bitti
+      setIsLoading(false)
     }
   }
 
   return (
     <div className="h-[calc(100vh-160px)] flex flex-col bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-      {/* Header Kısmı Aynı Kalıyor */}
+      {/* Header Kısmı */}
       <div className="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center backdrop-blur-md">
         <div className="flex items-center space-x-4 text-white">
           <Link href="/tenders" className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-white">
@@ -70,12 +72,35 @@ export default function TenderChat({ params: paramsPromise }: { params: Promise<
       <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide bg-radial-[circle_at_center] from-slate-900 via-slate-950 to-slate-950">
         {messages.map((msg, index) => (
           <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[75%] flex space-x-4 ${msg.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+            <div className={`max-w-[85%] flex space-x-4 ${msg.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'user' ? 'bg-linear-to-br from-blue-600 to-blue-700 text-white' : 'bg-slate-800 border border-slate-700 text-blue-400'}`}>
                 {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
               </div>
-              <div className={`p-5 rounded-3xl text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700 backdrop-blur-sm'}`}>
-                {msg.content}
+              <div className={`p-5 rounded-3xl text-sm leading-relaxed shadow-sm overflow-hidden ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-slate-700 backdrop-blur-sm'}`}>
+                
+                {msg.role === 'user' ? (
+                  msg.content
+                ) : (
+                  /* Hatanın Çözüldüğü Yer: className'i ayrı bir div'e aldık */
+                  <div className="space-y-4">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-white mt-6 mb-4" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold text-white mt-6 mb-3" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-bold text-emerald-400 mt-5 mb-2" {...props} />,
+                        p: ({node, ...props}) => <p className="leading-relaxed text-slate-300" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2 my-4" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-2 my-4" {...props} />,
+                        li: ({node, ...props}) => <li className="text-slate-300 marker:text-emerald-500" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
+
               </div>
             </div>
           </div>

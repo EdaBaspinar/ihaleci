@@ -18,6 +18,10 @@
         "tsx": "^4.21.0"
     },
     "dependencies": {
-        "dotenv": "^17.4.2"
+        "@auth/pg-adapter": "^1.11.2",
+        "dotenv": "^17.4.2",
+        "next-auth": "^4.24.14",
+        "react-markdown": "^10.1.0",
+        "remark-gfm": "^4.0.1"
     }
 }

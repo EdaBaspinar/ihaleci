@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@ihaleci/core', '@ihaleci/agents'],
+  reactStrictMode: true,
 };
 
 export default nextConfig;
